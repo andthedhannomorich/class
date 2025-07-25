@@ -38,8 +38,8 @@
       position: relative;
       width: 100%;
       padding-bottom: 56.25%; /* 16:9 aspect ratio */
-      background: transparent !important;
-      border-radius: 0 !important;
+      background: transparent !important; /* Changed to transparent */
+      border-radius: 0 !important; /* Removed border radius */
       overflow: hidden;
     }
     
@@ -61,6 +61,7 @@
       background: transparent !important;
     }
     
+    /* Make sure YouTube iframe is transparent */
     .plyr__video-embed iframe {
       background: transparent !important;
     }
@@ -79,9 +80,9 @@
     
     .resource-btn {
       display: block;
-      width: 60%; /* Changed to 60% width */
-      padding: 10px 16px;
-      margin: 0 auto 12px;
+      width: calc(100% - 24px); /* Adjusted width */
+      padding: 10px 16px; /* Reduced padding */
+      margin: 0 auto 12px; /* Centered margin */
       background: #3da6ff;
       color: white;
       border: none;
@@ -94,6 +95,20 @@
     
     .resource-btn:hover {
       background: #2b8ad6;
+    }
+    
+    .instructor-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .instructor-img {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
     }
   </style>
 </head>
@@ -119,6 +134,14 @@
     
     <div class="resources-section">
       <div class="description-box">
+        <div class="instructor-info">
+          <img src="https://randomuser.me/api/portraits/men/32.jpg" class="instructor-img" alt="Instructor">
+          <div>
+            <h3>Dr. Michael Johnson</h3>
+            <p>Professor of Biology</p>
+          </div>
+        </div>
+        
         <h3>About This Lecture</h3>
         <p>This video covers the fundamental concepts of animal classification and diversity, focusing on major phyla and their characteristics.</p>
       </div>
@@ -130,103 +153,99 @@
     // Function to get the video ID from the URL
     function getVideoId() {
       const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('v');
+      return urlParams.get('v') || 'lMVv3qz-rHs'; // Fallback to default ID if none in URL
     }
 
     // Initialize player with the video ID
     const videoId = getVideoId();
-    if (!videoId) {
-      alert('Please provide a YouTube video ID in the URL like this: ?v=YOUTUBEID');
-    } else {
-      const player = new Plyr('#player', {
-        controls: [
-          'play-large',
-          'play',
-          'progress',
-          'current-time',
-          'duration',
-          'mute',
-          'volume',
-          'settings',
-          'fullscreen'
-        ],
-        ratio: '16:9',
-        seekTime: 5,
-        keyboard: { focused: true, global: true },
-        youtube: {
-          noCookie: true,
-          rel: 0,
-          modestbranding: 1,
-          showinfo: 0,
-          controls: 0,
-          disablekb: 1
-        }
-      });
+    const player = new Plyr('#player', {
+      controls: [
+        'play-large',
+        'play',
+        'progress',
+        'current-time',
+        'duration',
+        'mute',
+        'volume',
+        'settings',
+        'fullscreen'
+      ],
+      ratio: '16:9',
+      seekTime: 5,
+      keyboard: { focused: true, global: true },
+      youtube: {
+        noCookie: true,
+        rel: 0,
+        modestbranding: 1,
+        showinfo: 0,
+        controls: 0,
+        disablekb: 1
+      }
+    });
 
-      // Set the video ID dynamically
-      player.source = {
-        type: 'video',
-        sources: [
-          {
-            src: videoId,
-            provider: 'youtube',
-          },
-        ],
-      };
+    // Set the video ID dynamically
+    player.source = {
+      type: 'video',
+      sources: [
+        {
+          src: videoId,
+          provider: 'youtube',
+        },
+      ],
+    };
 
-      // Ensure YouTube controls stay hidden
-      const hideYouTubeUI = () => {
-        const iframe = document.querySelector('.plyr__video-embed iframe');
-        if (iframe) {
-          iframe.style.pointerEvents = 'none';
-          iframe.style.backgroundColor = 'transparent';
-        }
+    // Ensure YouTube controls stay hidden
+    const hideYouTubeUI = () => {
+      const iframe = document.querySelector('.plyr__video-embed iframe');
+      if (iframe) {
+        iframe.style.pointerEvents = 'none';
+        iframe.style.backgroundColor = 'transparent';
+      }
+    };
+    
+    // Run immediately and periodically
+    hideYouTubeUI();
+    setInterval(hideYouTubeUI, 1000);
+    
+    // YouTube keyboard controls
+    document.addEventListener('keydown', (e) => {
+      if (document.activeElement.tagName === 'INPUT') return;
+      
+      const controls = {
+        ' ': () => player.togglePlay(),
+        'k': () => player.togglePlay(),
+        'm': () => player.muted = !player.muted,
+        'f': () => player.fullscreen.toggle(),
+        'ArrowLeft': () => player.rewind(5),
+        'ArrowRight': () => player.forward(5),
+        'j': () => player.rewind(10),
+        'l': () => player.forward(10),
+        '0': () => player.currentTime = 0,
+        'Home': () => player.currentTime = 0,
+        'End': () => player.currentTime = player.duration
       };
       
-      // Run immediately and periodically
-      hideYouTubeUI();
-      setInterval(hideYouTubeUI, 1000);
+      if (controls[e.key]) {
+        controls[e.key]();
+        e.preventDefault();
+      }
       
-      // YouTube keyboard controls
-      document.addEventListener('keydown', (e) => {
-        if (document.activeElement.tagName === 'INPUT') return;
-        
-        const controls = {
-          ' ': () => player.togglePlay(),
-          'k': () => player.togglePlay(),
-          'm': () => player.muted = !player.muted,
-          'f': () => player.fullscreen.toggle(),
-          'ArrowLeft': () => player.rewind(5),
-          'ArrowRight': () => player.forward(5),
-          'j': () => player.rewind(10),
-          'l': () => player.forward(10),
-          '0': () => player.currentTime = 0,
-          'Home': () => player.currentTime = 0,
-          'End': () => player.currentTime = player.duration
-        };
-        
-        if (controls[e.key]) {
-          controls[e.key]();
-          e.preventDefault();
-        }
-        
-        // Number keys 1-9 (10-90%)
-        if (e.key >= 1 && e.key <= 9) {
-          player.currentTime = player.duration * (e.key / 10);
-          e.preventDefault();
-        }
-      });
-      
-      // Mobile double-tap to play/pause
-      let lastTap = 0;
-      document.querySelector('.video-wrapper').addEventListener('click', (e) => {
-        const now = Date.now();
-        if (now - lastTap < 300) {
-          player.togglePlay();
-        }
-        lastTap = now;
-      });
-    }
+      // Number keys 1-9 (10-90%)
+      if (e.key >= 1 && e.key <= 9) {
+        player.currentTime = player.duration * (e.key / 10);
+        e.preventDefault();
+      }
+    });
+    
+    // Mobile double-tap to play/pause
+    let lastTap = 0;
+    document.querySelector('.video-wrapper').addEventListener('click', (e) => {
+      const now = Date.now();
+      if (now - lastTap < 300) {
+        player.togglePlay();
+      }
+      lastTap = now;
+    });
   </script>
 </body>
 </html>
